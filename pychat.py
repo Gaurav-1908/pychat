@@ -2,6 +2,7 @@ from email import message
 from django.dispatch import receiver
 import mysql.connector
 from datetime import date
+from operator import add
 
 mydb = mysql.connector.connect(
   host="34.236.148.2",
@@ -25,40 +26,47 @@ def send(sender):
     mycursor.execute(sql,values)
     users = mycursor.fetchall()
     sent = [row[0] for row in users]
-    print(sent)
-
+    #print(sent)
+    
     sql = 'select sender from messages where receiver = %s'
     values = (sender,)
     mycursor.execute(sql,values)
     users = mycursor.fetchall()
     received = [row[0] for row in users]
-    print(received)
+    #print(received)
 
-    receiver = input("Select Username to send message:")
-    sql = 'select sender,message_body from messages where sender in (%s,%s)'
-    values = (sender,receiver)
-    mycursor.execute(sql,values)
-    messages = mycursor.fetchall()
-
-    sender_list = [row[0] for row in messages]
-    messages_list = [row[1] for row in messages]
-    for i in range (len(sender_list)):
-        print(sender_list[i], ":" ,messages_list[i])
+    chats = sent + received
+    print(chats)
     chat(sender)
-    message = input("Enter message:")
-    today = date.today()
-    sql = 'insert into messages (sender,receiver,message_body,date_time) values(%s,%s,%s,%s)'
-    values = (sender,receiver,message,today)
-    print(values)
-    mycursor.execute(sql,values)
-    mydb.commit()
+    
     mycursor.close()
 
 def chat(sender):
-    mycursor = mydb.cursor()
-    while(1):
-        
-    mycursor.close()
+    
+    receiver = input("Select Username to send message:")
+    try:
+        while(1):
+            mycursor = mydb.cursor()
+            sql = 'select sender,message_body from messages where sender in (%s,%s)'
+            values = (sender,receiver)
+            mycursor.execute(sql,values)
+            messages = mycursor.fetchall()
+
+            sender_list = [row[0] for row in messages]
+            messages_list = [row[1] for row in messages]
+            for i in range (len(sender_list)):
+                print(sender_list[i], ":" ,messages_list[i])
+            message = input("Enter message:")
+            today = date.today()
+            sql = 'insert into messages (sender,receiver,message_body,date_time) values(%s,%s,%s,%s)'
+            values = (sender,receiver,message,today)
+            mycursor.execute(sql,values)
+            mydb.commit()
+            mycursor.close()
+    except KeyboardInterrupt:
+        mycursor.close()
+        send(sender)
+    
 
 
 def main():
