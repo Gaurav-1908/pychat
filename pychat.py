@@ -1,14 +1,18 @@
+import os
 from email import message
 from django.dispatch import receiver
 import mysql.connector
 from datetime import date
 from operator import add
+from dotenv import load_dotenv
+
+load_dotenv()
 
 mydb = mysql.connector.connect(
-  host="34.236.148.2",
-  user="chat",
-  password="Gaurav@2001",
-  database='chat'
+  host=os.getenv('PYCHAT_HOST'),
+  user=os.getenv('PYCHAT_USER'),
+  password=os.getenv('PYCHAT_PASSWORD'),
+  database=os.getenv('PYCHAT_DATABASE')
 )
 
 def create(username,name):
