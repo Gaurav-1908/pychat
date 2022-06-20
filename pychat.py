@@ -3,6 +3,7 @@ from django.dispatch import receiver
 import mysql.connector
 from datetime import date
 from operator import add
+from os import system, name
 
 mydb = mysql.connector.connect(
   host="34.236.148.2",
@@ -11,6 +12,16 @@ mydb = mysql.connector.connect(
   database='chat'
 )
 
+def clear():
+  
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+  
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
+
 def create(username,name):
     mycursor = mydb.cursor()
     sql = 'insert into users (username,name) values(%s, %s)'
@@ -18,28 +29,32 @@ def create(username,name):
     mycursor.execute(sql,values)
     mydb.commit()
     mycursor.close()
+    send(username)
 
 def send(sender):
-    mycursor = mydb.cursor()
-    sql = 'select receiver from messages where sender = %s'
-    values = (sender,)
-    mycursor.execute(sql,values)
-    users = mycursor.fetchall()
-    sent = [row[0] for row in users]
-    #print(sent)
-    
-    sql = 'select sender from messages where receiver = %s'
-    values = (sender,)
-    mycursor.execute(sql,values)
-    users = mycursor.fetchall()
-    received = [row[0] for row in users]
-    #print(received)
+    try:
+        mycursor = mydb.cursor()
+        sql = 'select receiver from messages where sender = %s'
+        values = (sender,)
+        mycursor.execute(sql,values)
+        users = mycursor.fetchall()
+        sent = [row[0] for row in users]
+        #print(sent)
+        
+        sql = 'select sender from messages where receiver = %s'
+        values = (sender,)
+        mycursor.execute(sql,values)
+        users = mycursor.fetchall()
+        received = [row[0] for row in users]
+        #print(received)
 
-    chats = sent + received
-    print(chats)
-    chat(sender)
-    
-    mycursor.close()
+        chats = sent + received
+        print(chats)
+        chat(sender)
+        
+        mycursor.close()
+    except KeyboardInterrupt:
+        main()
 
 def chat(sender):
     
@@ -63,6 +78,7 @@ def chat(sender):
             mycursor.execute(sql,values)
             mydb.commit()
             mycursor.close()
+            clear()
     except KeyboardInterrupt:
         mycursor.close()
         send(sender)
@@ -70,7 +86,7 @@ def chat(sender):
 
 
 def main():
-    print("Select Operation\n1.Create Account\n2.Chat\n")
+    print("Select Operation\n1.Create Account\n2.Chat\n3.Log Out")
     choice = int(input())
     #choice =1
     if choice == 1:
@@ -80,6 +96,8 @@ def main():
     elif choice == 2:
         username = input("Enter your username:")
         send(username)
+    elif choice == 3:
+        return
     else:
         main()
 
