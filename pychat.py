@@ -1,16 +1,18 @@
-from email import message
-from django.dispatch import receiver
 import mysql.connector
 from datetime import date
 from operator import add
-from os import system, name
+from os import system, name,getenv
+from dotenv import load_dotenv
+
+load_dotenv()
 
 mydb = mysql.connector.connect(
-  host="34.236.148.2",
-  user="chat",
-  password="Gaurav@2001",
-  database='chat'
+  host = getenv('PYCHAT_HOST'),
+  user=getenv('PYCHAT_USER'),
+  password=getenv('PYCHAT_PASSWORD'),
+  database=getenv('PYCHAT_DATABSES')
 )
+
 
 def clear():
   
